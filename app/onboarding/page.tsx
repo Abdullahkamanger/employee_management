@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { useState, Suspense } from "react";
 import { Lock, Rocket, ShieldCheck, ArrowRight, Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { completeOnboarding } from "@/lib/onboarding-actions";
