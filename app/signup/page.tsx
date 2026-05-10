@@ -108,7 +108,7 @@ export default function RegisterPage() {
 
           <button 
             className="w-full mt-6 flex items-center justify-center gap-3 bg-white text-slate-900 font-medium py-2.5 rounded-lg hover:bg-slate-100 transition-colors"
-              onClick={() => signIn("google", { callbackUrl: "/admin/dashboard" })}
+              onClick={() => signIn("google", { callbackUrl: "/admin" })}
           >
             <Image src="https://www.svgrepo.com/show/475656/google-color.svg" loading="lazy" className="w-5 h-5" alt="google logo"
             width={20} height={20} />
