@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
-import SettingsForm from "@/components/admin/SettingsForm";
+import SettingsClient from "@/components/admin/SettingsClient";
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -18,7 +18,7 @@ export default async function SettingsPage() {
         <p className="text-slate-400">Manage your account settings and system preferences.</p>
       </div>
 
-      <SettingsForm initialUser={JSON.parse(JSON.stringify(dbUser))} />
+      <SettingsClient initialUser={JSON.parse(JSON.stringify(dbUser))} />
     </div>
   );
 }

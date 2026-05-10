@@ -36,7 +36,7 @@ export default auth((req) => {
     }
 
     // Force onboarding if password is not set
-    if (!user?.hasPassword) {
+    if (!(user as any)?.hasPassword) {
       return NextResponse.redirect(new URL("/onboarding", nextUrl));
     }
   }
@@ -45,7 +45,7 @@ export default auth((req) => {
   if (isOnboardingRoute) {
     if (!isLoggedIn) return NextResponse.redirect(new URL("/signin", nextUrl));
     
-    if (user?.hasPassword) {
+    if ((user as any)?.hasPassword) {
       const role = (user?.role || "").toLowerCase();
       return NextResponse.redirect(new URL(role === "admin" ? "/admin" : "/", nextUrl));
     }

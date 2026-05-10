@@ -78,8 +78,12 @@ export default function EmployeeTable({ employees }: { employees: Employee[] }) 
                 <td className="px-6 py-4 text-sm text-slate-400">
                   <div className="flex items-center gap-2">
                     <Calendar size={14} className="text-slate-500" />
-                    {emp.createdAt 
-                      ? new Date(emp.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) 
+                    {emp.createdAt && !isNaN(new Date(emp.createdAt).getTime())
+                      ? new Date(emp.createdAt).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric'
+                        })
                       : "N/A"}
                   </div>
                 </td>
