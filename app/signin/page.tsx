@@ -121,7 +121,7 @@ export default function LoginPage() {
 
           <motion.button 
             whileHover={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}
-            onClick={() => signIn("google", { callbackUrl: "/admin/dashboard" })}
+            onClick={() => signIn("google", { callbackUrl: "/admin" })}
             className="w-full flex items-center justify-center gap-3 border border-white/10 text-white font-medium py-3 rounded-xl transition-colors"
           >
             <Image src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="Google" width={20} height={20} />

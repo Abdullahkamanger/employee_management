@@ -23,7 +23,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         await connectDB();
         
         // Find user by email
-        const user = await User.findOne({ email: credentials?.email });
+        const user = await User.findOne({ email: credentials?.email }).select("+password");
         
         // If no user or if it's a Google user (no password), return null
         if (!user || !user.password) return null;
