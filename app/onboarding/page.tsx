@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense } from "react";
 import { Lock, Rocket, ShieldCheck, ArrowRight, Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { completeOnboarding } from "@/lib/onboarding-actions";
 import { toast } from "sonner";
 
-export default function OnboardingPage() {
+function OnboardingContent() {
   const [loading, setLoading] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -132,5 +132,17 @@ export default function OnboardingPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <Loader2 className="text-purple-500 animate-spin" size={40} />
+      </div>
+    }>
+      <OnboardingContent />
+    </Suspense>
   );
 }
