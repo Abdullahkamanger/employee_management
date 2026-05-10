@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Lock, Rocket, ShieldCheck, ArrowRight, Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { completeOnboarding } from "@/lib/onboarding-actions";
 import { toast } from "sonner";
 
@@ -11,6 +11,10 @@ export default function OnboardingPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  const token = searchParams.get("token");
+  const email = searchParams.get("email");
 
   const handleComplete = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,12 +32,16 @@ export default function OnboardingPage() {
     setLoading(true);
     
     try {
-      const res = await completeOnboarding(password);
+      const res = await completeOnboarding(password, token || undefined, email || undefined);
       if (res.success) {
         toast.success("Account setup complete!");
         // Small delay to let user see success state
         setTimeout(() => {
-           router.push("/");
+           if (token) {
+             router.push("/signin");
+           } else {
+             router.push("/");
+           }
            router.refresh(); // Refresh to update session
         }, 1500);
       } else {

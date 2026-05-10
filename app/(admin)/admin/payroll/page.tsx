@@ -81,7 +81,7 @@ export default async function PayrollPage() {
             <p className="text-slate-500">No payroll records found. Click "Run Payroll" to generate the first batch.</p>
           </div>
         ) : (
-          <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden backdrop-blur-sm">
+          <div className="bg-white/5 border border-white/10 rounded-2xl backdrop-blur-sm">
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-white/5 text-[10px] uppercase text-slate-500 tracking-widest font-bold bg-white/5">

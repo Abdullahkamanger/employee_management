@@ -66,3 +66,19 @@ export async function updatePayrollStatus(id: string, status: "Pending" | "Proce
     return { success: false, error: error.message || "Failed to update payroll status" };
   }
 }
+
+export async function getUserPayroll(employeeId: string) {
+  try {
+    await connectDB();
+    const history = await Payroll.find({ employeeId })
+      .sort({ month: -1 })
+      .limit(6)
+      .lean();
+    
+    return { success: true, data: JSON.parse(JSON.stringify(history)) };
+  } catch (error) {
+    console.error("Error fetching user payroll:", error);
+    return { success: false, data: [] };
+  }
+}
+

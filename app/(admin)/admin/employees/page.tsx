@@ -5,12 +5,16 @@ import EmployeeHeader from "@/components/admin/EmployeeHeader";
 export default async function EmployeesPage({
   searchParams,
 }: {
-  searchParams: { search?: string; deptId?: string };
+  searchParams: Promise<{ search?: string; deptId?: string; status?: string }>;
 }) {
+  const { search, deptId, status } = await searchParams;
+  const currentStatus = status || "Active";
+
   // Use searchParams to filter data on the server
   const result = await getAllEmployees({
-    search: searchParams.search,
-    department: searchParams.deptId,
+    search,
+    department: deptId,
+    status: currentStatus,
   });
   
   const employees = result.success ? result.data : [];

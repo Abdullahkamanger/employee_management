@@ -1,24 +1,68 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, UserPlus, Loader2, Mail, Shield, User, LayoutGrid, DollarSign, Briefcase } from "lucide-react";
-import { createEmployee } from "@/lib/employee-actions";
+import { X, UserPlus, Loader2, Mail, Shield, User, LayoutGrid, DollarSign, Briefcase, Save } from "lucide-react";
+import { createEmployee, updateEmployee } from "@/lib/employee-actions";
 import { getDepartments } from "@/lib/dept-actions";
 import { toast } from "sonner";
 
-export default function AddEmployeeModal({ 
+interface Employee {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+  designation?: string;
+  salary?: number;
+  department?: any;
+  status?: string;
+}
+
+export default function AddEditEmployeeModal({ 
   isOpen, 
-  onClose 
+  onClose,
+  employee = null
 }: { 
   isOpen: boolean; 
-  onClose: () => void 
+  onClose: () => void;
+  employee?: Employee | null;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [departments, setDepartments] = useState<any[]>([]);
 
+  // Form states to handle both create and edit
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    role: "Employee",
+    department: "",
+    salary: 0,
+    designation: "",
+  });
+
   useEffect(() => {
     if (isOpen) {
+      // Reset form if opening for new employee, or populate if editing
+      if (employee) {
+        setFormData({
+          name: employee.name,
+          email: employee.email,
+          role: employee.role,
+          department: typeof employee.department === 'string' ? employee.department : employee.department?._id || "",
+          salary: employee.salary || 0,
+          designation: employee.designation || "",
+        });
+      } else {
+        setFormData({
+          name: "",
+          email: "",
+          role: "Employee",
+          department: "",
+          salary: 0,
+          designation: "",
+        });
+      }
+
       const fetchDepts = async () => {
         const res = await getDepartments();
         if (res.success) {
@@ -27,7 +71,7 @@ export default function AddEmployeeModal({
       };
       fetchDepts();
     }
-  }, [isOpen]);
+  }, [isOpen, employee]);
 
   if (!isOpen) return null;
 
@@ -36,29 +80,44 @@ export default function AddEmployeeModal({
     setLoading(true);
     setError(null);
     
-    const formData = new FormData(e.currentTarget);
-    const data = {
-      name: formData.get("name") as string,
-      email: formData.get("email") as string,
-      role: formData.get("role") as string,
-      department: formData.get("department") as string,
-      salary: Number(formData.get("salary")) || 0,
-      designation: formData.get("designation") as string,
-    };
-
     try {
-      const res = await createEmployee(data);
-      if (res.success) {
-        toast.success(`Account created for ${data.name}!`);
-        onClose();
+      if (employee) {
+        // Update Logic
+        const updateData = { ...formData };
+        if (employee.status === "Pending") {
+          (updateData as any).status = "Active";
+        }
+        
+        const res = await updateEmployee(employee._id, updateData as any);
+        if (res.success) {
+          toast.success(employee.status === "Pending" ? `Approved ${formData.name}!` : `Updated ${formData.name}'s information!`);
+          onClose();
+        } else {
+          setError(res.error || "Failed to update employee");
+        }
       } else {
-        setError(res.error || "An unknown error occurred");
+        // Create Logic
+        const res = await createEmployee(formData);
+        if (res.success) {
+          toast.success(`Account created for ${formData.name}!`);
+          onClose();
+        } else {
+          setError(res.error || "Failed to create employee");
+        }
       }
     } catch (err: any) {
-      setError(err.message || "Failed to submit form");
+      setError(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: name === "salary" ? Number(value) : value
+    }));
   };
 
   return (
@@ -67,9 +126,12 @@ export default function AddEmployeeModal({
         <div className="flex justify-between items-center mb-8">
           <div>
             <h3 className="text-xl font-bold text-white flex items-center gap-2">
-              <UserPlus className="text-purple-400" /> New Employee
+              {employee?.status === "Pending" ? <Shield className="text-emerald-400" /> : employee ? <Briefcase className="text-purple-400" /> : <UserPlus className="text-purple-400" />}
+              {employee?.status === "Pending" ? "Approve Employee" : employee ? "Edit Employee" : "New Employee"}
             </h3>
-            <p className="text-xs text-slate-500 mt-1">Add a new member to your organization.</p>
+            <p className="text-xs text-slate-500 mt-1">
+              {employee?.status === "Pending" ? "Assign department and designation to activate account." : employee ? "Modify employee details and permissions." : "Add a new member to your organization."}
+            </p>
           </div>
           <button 
             onClick={onClose} 
@@ -93,6 +155,8 @@ export default function AddEmployeeModal({
             <input 
               name="name" 
               required 
+              value={formData.name}
+              onChange={handleChange}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 transition-all placeholder:text-slate-600" 
               placeholder="John Doe" 
             />
@@ -106,6 +170,8 @@ export default function AddEmployeeModal({
               name="email" 
               type="email" 
               required 
+              value={formData.email}
+              onChange={handleChange}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 transition-all placeholder:text-slate-600" 
               placeholder="john@company.com" 
             />
@@ -118,8 +184,10 @@ export default function AddEmployeeModal({
             <input 
               name="designation" 
               required 
+              value={formData.designation}
+              onChange={handleChange}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 transition-all placeholder:text-slate-600" 
-              placeholder="e.g. Senior Developer, Marketing Lead" 
+              placeholder="e.g. Senior Developer" 
             />
           </div>
 
@@ -131,6 +199,8 @@ export default function AddEmployeeModal({
               <div className="relative">
                 <select 
                   name="role" 
+                  value={formData.role}
+                  onChange={handleChange}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 transition-all appearance-none cursor-pointer"
                 >
                   <option value="Employee" className="bg-slate-900">Employee</option>
@@ -151,6 +221,8 @@ export default function AddEmployeeModal({
                 <select 
                   name="department" 
                   required
+                  value={formData.department}
+                  onChange={handleChange}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 transition-all appearance-none cursor-pointer"
                 >
                   <option value="" className="bg-slate-900">Select...</option>
@@ -175,6 +247,8 @@ export default function AddEmployeeModal({
               name="salary" 
               type="number"
               required 
+              value={formData.salary}
+              onChange={handleChange}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 transition-all placeholder:text-slate-600" 
               placeholder="e.g. 5000" 
             />
@@ -188,12 +262,12 @@ export default function AddEmployeeModal({
               {loading ? (
                 <>
                   <Loader2 className="animate-spin" size={20} />
-                  <span>Creating Account...</span>
+                  <span>{employee ? "Saving Changes..." : "Creating Account..."}</span>
                 </>
               ) : (
                 <>
-                  <UserPlus size={20} />
-                  <span>Create Employee Account</span>
+                  {employee ? <Save size={20} /> : <UserPlus size={20} />}
+                  <span>{employee?.status === "Pending" ? "Approve & Activate" : employee ? "Save Changes" : "Create Employee Account"}</span>
                 </>
               )}
             </button>

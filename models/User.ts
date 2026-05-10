@@ -12,6 +12,8 @@ export interface IUser extends mongoose.Document {
   hasPassword: boolean;
   salary: number;
   designation: string;
+  status: "Pending" | "Active" | "Inactive";
+  setupToken?: string;
   notifications?: {
     email: boolean;
     payroll: boolean;
@@ -65,6 +67,15 @@ const UserSchema = new Schema<IUser>(
       type: String,
       default: "Staff"
     },
+    status: {
+      type: String,
+      enum: ["Pending", "Active", "Inactive"],
+      default: "Pending"
+    },
+    setupToken: {
+      type: String,
+      default: null
+    },
     notifications: {
       email: { type: Boolean, default: true },
       payroll: { type: Boolean, default: true },
@@ -82,6 +93,7 @@ const UserSchema = new Schema<IUser>(
 
 // This "models.User || model..." check is critical for Next.js 
 // to prevent re-defining the model during hot reloads.
+// If status is missing in your DB, try restarting the dev server to refresh this model.
 const User = models.User || model<IUser>("User", UserSchema);
 
 export default User;

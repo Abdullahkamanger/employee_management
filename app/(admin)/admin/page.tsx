@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import Link from "next/link";
 import { Users, Briefcase, TrendingUp, LayoutGrid, Clock, ShieldCheck } from "lucide-react";
 import { getAllEmployees } from "@/lib/employee-actions";
 import { getDepartments } from "@/lib/dept-actions";
@@ -93,9 +94,12 @@ export default async function AdminDashboard() {
             <h3 className="text-lg font-semibold text-white flex items-center gap-2">
               <Clock size={20} className="text-purple-400" /> Recent Hires
             </h3>
-            <button className="text-xs font-bold text-purple-400 hover:text-purple-300 transition-colors uppercase tracking-widest">
+            <Link 
+              href="/admin/employees"
+              className="text-xs font-bold text-purple-400 hover:text-purple-300 transition-colors uppercase tracking-widest"
+            >
               View Directory
-            </button>
+            </Link>
           </div>
           
           <div className="space-y-4">
@@ -129,18 +133,30 @@ export default async function AdminDashboard() {
             <p className="text-slate-400 text-sm mb-6">Quickly manage system-wide operations.</p>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <button className="bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-2xl text-sm text-white font-semibold text-left transition-all hover:-translate-y-1">
+              <Link 
+                href="/admin/payroll"
+                className="bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-2xl text-sm text-white font-semibold text-left transition-all hover:-translate-y-1"
+              >
                 Generate Payroll
-              </button>
-              <button className="bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-2xl text-sm text-white font-semibold text-left transition-all hover:-translate-y-1">
+              </Link>
+              <Link 
+                href="/admin/payroll"
+                className="bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-2xl text-sm text-white font-semibold text-left transition-all hover:-translate-y-1"
+              >
                 View Reports
-              </button>
-              <button className="bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-2xl text-sm text-white font-semibold text-left transition-all hover:-translate-y-1">
+              </Link>
+              <Link 
+                href="/admin/settings"
+                className="bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-2xl text-sm text-white font-semibold text-left transition-all hover:-translate-y-1"
+              >
                 Company Policies
-              </button>
-              <button className="bg-purple-600 hover:bg-purple-500 p-4 rounded-2xl text-sm text-white font-bold text-left transition-all shadow-lg shadow-purple-500/20">
+              </Link>
+              <Link 
+                href="/admin/settings"
+                className="bg-purple-600 hover:bg-purple-500 p-4 rounded-2xl text-sm text-white font-bold text-left transition-all shadow-lg shadow-purple-500/20"
+              >
                 System Settings
-              </button>
+              </Link>
             </div>
           </div>
           {/* Decorative background glow */}

@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, ShieldCheck, Calendar, LayoutGrid, Trash2, Edit2 } from "lucide-react";
+import { Mail, ShieldCheck, Calendar, LayoutGrid, Trash2, Edit2, Shield } from "lucide-react";
 import { deleteEmployee } from "@/lib/employee-actions";
 import { toast } from "sonner";
 import DeleteConfirmModal from "./DeleteConfirmModal";
+import AddEditEmployeeModal from "./AddEditEmployeeModal";
 
 interface Employee {
   _id: string;
@@ -16,11 +17,17 @@ interface Employee {
     name: string;
   };
   createdAt: string;
+  designation?: string;
+  salary?: number;
+  status: string;
 }
 
 export default function EmployeeTable({ employees }: { employees: Employee[] }) {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteName, setDeleteName] = useState("");
+  
+  // Edit state
+  const [editEmployee, setEditEmployee] = useState<Employee | null>(null);
 
   const handleConfirmDelete = async () => {
     if (!deleteId) return;
@@ -57,7 +64,7 @@ export default function EmployeeTable({ employees }: { employees: Employee[] }) 
                     <div>
                       <p className="text-sm font-medium text-white">{emp.name}</p>
                       <p className="text-[10px] text-slate-500 flex items-center gap-1">
-                        <Mail size={12} /> {emp.email}
+                         <Mail size={12} /> {emp.email}
                       </p>
                     </div>
                   </div>
@@ -89,18 +96,32 @@ export default function EmployeeTable({ employees }: { employees: Employee[] }) 
                 </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <button className="p-2 text-slate-500 hover:text-white hover:bg-white/5 rounded-lg transition-all active:scale-90">
-                      <Edit2 size={16} />
-                    </button>
-                    <button 
-                      onClick={() => {
-                        setDeleteId(emp._id);
-                        setDeleteName(emp.name);
-                      }}
-                      className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all active:scale-90"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    {emp.status === "Pending" ? (
+                      <button 
+                        onClick={() => setEditEmployee(emp)}
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center gap-2"
+                      >
+                        <Shield size={14} /> Approve
+                      </button>
+                    ) : (
+                      <>
+                        <button 
+                          onClick={() => setEditEmployee(emp)}
+                          className="p-2 text-slate-500 hover:text-white hover:bg-white/5 rounded-lg transition-all active:scale-90"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button 
+                          onClick={() => {
+                            setDeleteId(emp._id);
+                            setDeleteName(emp.name);
+                          }}
+                          className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all active:scale-90"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -109,12 +130,20 @@ export default function EmployeeTable({ employees }: { employees: Employee[] }) 
         </table>
       </div>
 
+      {/* Delete Confirmation */}
       <DeleteConfirmModal 
         isOpen={!!deleteId}
         onClose={() => setDeleteId(null)}
         onConfirm={handleConfirmDelete}
         title="Delete Employee Account"
         message={`Are you sure you want to delete ${deleteName}? All access will be revoked immediately and this action cannot be undone.`}
+      />
+
+      {/* Edit Modal */}
+      <AddEditEmployeeModal 
+        isOpen={!!editEmployee}
+        onClose={() => setEditEmployee(null)}
+        employee={editEmployee}
       />
     </>
   );

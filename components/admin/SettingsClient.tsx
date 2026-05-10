@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import { updateUserSettings } from "@/lib/settings-actions";
-import { Save, Loader2, Camera, User, Lock, Bell } from "lucide-react";
+import { 
+  Save, Loader2, Camera, User, 
+  Lock, Bell, Shield, LayoutGrid, 
+  FileText, Activity, Server, Database 
+} from "lucide-react";
 import { toast } from "sonner";
 import ChangePasswordModal from "./ChangePasswordModal";
 
@@ -40,9 +44,9 @@ export default function SettingsClient({ initialUser }: { initialUser: any }) {
   };
 
   return (
-    <div className="max-w-4xl space-y-8">
+    <div className="max-w-4xl space-y-8 pb-20">
       {/* Profile Section */}
-      <section className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6">
+      <section className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6 backdrop-blur-sm">
         <div className="flex items-center gap-2 text-purple-400 mb-2">
           <User size={20} />
           <h3 className="text-lg font-semibold text-white">Profile Information</h3>
@@ -86,7 +90,7 @@ export default function SettingsClient({ initialUser }: { initialUser: any }) {
       </section>
 
       {/* Security Section */}
-      <section className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6">
+      <section className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6 backdrop-blur-sm">
         <div className="flex items-center gap-2 text-amber-400 mb-2">
           <Lock size={20} />
           <h3 className="text-lg font-semibold text-white">Security</h3>
@@ -118,7 +122,7 @@ export default function SettingsClient({ initialUser }: { initialUser: any }) {
       </section>
 
       {/* Notifications Section */}
-      <section className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6">
+      <section className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6 backdrop-blur-sm">
         <div className="flex items-center gap-2 text-blue-400 mb-2">
           <Bell size={20} />
           <h3 className="text-lg font-semibold text-white">Notifications</h3>
@@ -142,15 +146,68 @@ export default function SettingsClient({ initialUser }: { initialUser: any }) {
         </div>
       </section>
 
+      {/* Organization Policies */}
+      <section id="policies" className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6 backdrop-blur-sm">
+        <div className="flex items-center gap-2 text-purple-400 mb-2">
+          <FileText size={20} />
+          <h3 className="text-lg font-semibold text-white">Organization Policies</h3>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[
+            { name: "Remote Work Policy", size: "1.2 MB", date: "Jan 2024" },
+            { name: "Code of Conduct", size: "850 KB", date: "Dec 2023" },
+            { name: "Security Protocols", size: "2.4 MB", date: "Mar 2024" },
+            { name: "Leave & Benefits", size: "1.5 MB", date: "Feb 2024" },
+          ].map((policy) => (
+            <div key={policy.name} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all cursor-pointer group">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-500/10 rounded-lg text-purple-400">
+                  <FileText size={16} />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-white">{policy.name}</p>
+                  <p className="text-[10px] text-slate-500 uppercase font-bold tracking-tight">{policy.size} • Updated {policy.date}</p>
+                </div>
+              </div>
+              <Save size={14} className="text-slate-600 group-hover:text-purple-400" />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* System Status */}
+      <section className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6 backdrop-blur-sm">
+        <div className="flex items-center gap-2 text-emerald-400 mb-2">
+          <Activity size={20} />
+          <h3 className="text-lg font-semibold text-white">System Status</h3>
+        </div>
+        
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { label: "Database", status: "Operational", color: "text-emerald-400", icon: Database },
+            { label: "Storage", status: "92% Free", color: "text-blue-400", icon: Server },
+            { label: "Auth API", status: "Online", color: "text-emerald-400", icon: Shield },
+            { label: "SMTP Server", status: "Connected", color: "text-emerald-400", icon: Server },
+          ].map((item) => (
+            <div key={item.label} className="p-4 bg-white/5 rounded-2xl border border-white/5 text-center">
+              <item.icon className={`mx-auto mb-2 ${item.color}`} size={16} />
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">{item.label}</p>
+              <p className={`text-xs font-bold ${item.color}`}>{item.status}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Save Button */}
-      <div className="flex justify-end gap-4">
+      <div className="fixed bottom-8 right-8 z-50">
         <button 
           onClick={handleSave}
           disabled={isSaving}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-purple-500/20 active:scale-95 disabled:opacity-50"
+          className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-2 transition-all shadow-2xl shadow-purple-500/40 active:scale-95 disabled:opacity-50"
         >
           {isSaving ? <Loader2 className="animate-spin" /> : <Save size={20} />}
-          Save Changes
+          Save All Settings
         </button>
       </div>
 

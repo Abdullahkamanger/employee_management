@@ -18,8 +18,13 @@ export default function RegisterPage() {
       const name = formData.get("name") as string;
       const email = formData.get("email") as string;
       const password = formData.get("password") as string;
-        await registerUser({ name, email, password });
-        toast.success("Registration successful!");
+      const res = await registerUser({ name, email, password });
+      
+      if (res.error) {
+        toast.error(res.error);
+      } else {
+        toast.success("Registration successful! Your account is now pending approval.");
+      }
     } catch (error) {
       console.error("Registration failed:", error);
       toast.error("Registration failed. Please try again. Error: " + (error instanceof Error ? error.message : "Unknown error"));

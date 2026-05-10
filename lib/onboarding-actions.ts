@@ -6,24 +6,36 @@ import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 
-export async function completeOnboarding(password: string) {
+export async function completeOnboarding(password: string, token?: string, email?: string) {
   try {
-    const session = await auth();
-    if (!session?.user?.email) {
-      return { success: false, error: "Unauthorized" };
-    }
+    let targetEmail: string | undefined;
 
     await connectDB();
+
+    if (token && email) {
+      const user = await User.findOne({ email, setupToken: token });
+      if (!user) {
+        return { success: false, error: "Invalid or expired setup link." };
+      }
+      targetEmail = email;
+    } else {
+      const session = await auth();
+      if (!session?.user?.email) {
+        return { success: false, error: "Unauthorized" };
+      }
+      targetEmail = session.user.email;
+    }
 
     // 1. Hash the password
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // 2. Update the user
     await User.findOneAndUpdate(
-      { email: session.user.email },
+      { email: targetEmail },
       { 
         password: hashedPassword, 
-        hasPassword: true 
+        hasPassword: true,
+        setupToken: null // Clear the token once used
       }
     );
 

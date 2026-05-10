@@ -3,18 +3,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
-  LayoutDashboard, Users, Building2, 
-  Banknote, Settings, LogOut, MessageSquare 
+  LayoutDashboard, Banknote, User, 
+  MessageSquare, Settings, LogOut 
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
 const navItems = [
-  { name: "Overview", href: "/admin", icon: LayoutDashboard },
-  { name: "Employees", href: "/admin/employees", icon: Users },
-  { name: "Departments", href: "/admin/departments", icon: Building2 },
-  { name: "Payroll", href: "/admin/payroll", icon: Banknote },
-  { name: "Messages", href: "/admin/messages", icon: MessageSquare },
-  { name: "Settings", href: "/admin/settings", icon: Settings },
+  { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+  { name: "My Payroll", href: "/dashboard/payroll", icon: Banknote },
+  { name: "Messages", href: "/dashboard/messages", icon: MessageSquare },
+  { name: "Profile", href: "/dashboard/profile", icon: User },
+  { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 export default function Sidebar() {
@@ -24,7 +23,7 @@ export default function Sidebar() {
     <aside className="hidden md:flex w-72 flex-col bg-black/20 backdrop-blur-xl border-r border-white/5">
       <div className="p-8">
         <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-purple-400 bg-clip-text text-transparent">
-          EMS Pro
+          EMS Portal
         </h1>
       </div>
 

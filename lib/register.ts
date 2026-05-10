@@ -36,12 +36,14 @@ export const registerUser = async (values: z.infer<typeof RegisterSchema>) => {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // 6. Create the user
-    // Note: We set the first user as 'Admin' or keep it 'Employee' by default
+    console.log("CREATING PENDING USER:", email);
     await User.create({
       name,
       email,
       password: hashedPassword,
       role: "Employee", 
+      status: "Pending",
+      hasPassword: true,
     });
 
     return { success: "User created successfully!" };

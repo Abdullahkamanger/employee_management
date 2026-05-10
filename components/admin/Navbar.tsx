@@ -2,6 +2,9 @@
 
 import { Search, Bell, Menu, User } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { getUnreadCount } from "@/lib/message-actions";
 
 interface NavbarProps {
   user: {
@@ -20,6 +23,18 @@ const getInitials = (name: string) => {
     .toUpperCase()
     .slice(0, 2);
 };
+
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    const fetchCount = async () => {
+      const res = await getUnreadCount();
+      if (res.success) setUnreadCount(res.count);
+    };
+    fetchCount();
+    const interval = setInterval(fetchCount, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <header className="h-20 bg-black/10 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-8 z-20">
@@ -42,10 +57,14 @@ const getInitials = (name: string) => {
       {/* Right Side Actions */}
       <div className="flex items-center gap-6">
         {/* Notifications */}
-        <button className="relative p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-full transition-all">
+        <Link href="/admin/messages" className="relative p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-full transition-all">
           <Bell size={20} />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-purple-500 rounded-full border-2 border-[#0a0a0c]"></span>
-        </button>
+          {unreadCount > 0 && (
+            <span className="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-[#0a0a0c] px-1">
+              {unreadCount}
+            </span>
+          )}
+        </Link>
 
         {/* User Profile */}
         <div className="flex items-center gap-4 pl-6 border-l border-white/10">

@@ -3,9 +3,9 @@
 import { connectDB } from "@/lib/db"; 
 import User, { IUser } from "@/models/User"; 
 import { revalidatePath } from "next/cache";
-import { sendInviteEmail } from "./mail";
+import { sendInviteEmail, sendApprovalEmail } from "./mail";
 
-export async function getAllEmployees(filters?: { search?: string; department?: string }) {
+export async function getAllEmployees(filters?: { search?: string; department?: string; status?: string }) {
   try {
     await connectDB();
     
@@ -17,6 +17,14 @@ export async function getAllEmployees(filters?: { search?: string; department?: 
     
     if (filters?.department) {
       query.department = filters.department;
+    }
+
+    if (filters?.status) {
+      if (filters.status === "Active") {
+        query.status = { $in: ["Active", null, undefined] };
+      } else {
+        query.status = filters.status;
+      }
     }
 
     const employees = await User.find(query)
@@ -42,6 +50,8 @@ export async function createEmployee(data: {
   try {
     await connectDB();
     
+    const setupToken = crypto.randomUUID();
+    
     // Create new user with hasPassword: false and department link
     await User.create({
       name: data.name,
@@ -51,10 +61,12 @@ export async function createEmployee(data: {
       salary: data.salary || 0,
       designation: data.designation || "Staff",
       hasPassword: false, 
+      status: "Active",
+      setupToken: setupToken,
     });
 
     // Send the invite email
-    await sendInviteEmail(data.email, data.name);
+    await sendInviteEmail(data.email, data.name, setupToken);
 
     // This clears the cache so the Employee Table updates immediately
     revalidatePath("/admin/employees");
@@ -80,10 +92,49 @@ export async function deleteEmployee(id: string) {
 export async function updateEmployee(id: string, data: Partial<IUser>) {
   try {
     await connectDB();
+    
+    // If approving a user, we might need to send an email
+    if (data.status === "Active") {
+      const existingUser = await User.findById(id);
+      if (existingUser && existingUser.status === "Pending") {
+         await sendApprovalEmail(existingUser.email, existingUser.name);
+      }
+    }
+
     await User.findByIdAndUpdate(id, data);
     revalidatePath("/admin/employees");
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message || "Failed to update employee" };
+  }
+}
+
+export async function getEmployeeProfile(email: string) {
+  try {
+    await connectDB();
+    const user = await User.findOne({ email })
+      .select("-password")
+      .populate("department", "name")
+      .lean();
+    
+    if (!user) return { success: false, error: "User not found" };
+    
+    return { success: true, data: JSON.parse(JSON.stringify(user)) };
+  } catch (error) {
+    console.error("Error fetching employee profile:", error);
+    return { success: false, error: "Failed to fetch profile" };
+  }
+}
+
+export async function getAdminUsers() {
+  try {
+    await connectDB();
+    const admins = await User.find({ 
+      role: { $regex: /^admin$/i } 
+    }).select("_id name email").lean();
+    return { success: true, data: JSON.parse(JSON.stringify(admins)) };
+  } catch (error) {
+    console.error("Error fetching admin users:", error);
+    return { success: false, data: [] };
   }
 }
