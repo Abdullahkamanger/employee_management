@@ -7,8 +7,17 @@ export interface IUser extends mongoose.Document {
   password?: string; // Optional because Google users don't have passwords
   image?: string;
   role: "Admin" | "Manager" | "Employee";
-  department?: string;
+  department?: mongoose.Types.ObjectId | any;
   emailVerified: Date | null;
+  hasPassword: boolean;
+  salary: number;
+  designation: string;
+  notifications?: {
+    email: boolean;
+    payroll: boolean;
+    newJoiners: boolean;
+  };
+  twoFactor?: boolean;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -26,7 +35,7 @@ const UserSchema = new Schema<IUser>(
     },
     password: { 
       type: String, 
-      // Not required because of Google Login
+      select: false, // Prevents password from being returned in queries by default
     },
     image: { 
       type: String 
@@ -37,13 +46,34 @@ const UserSchema = new Schema<IUser>(
       default: "Employee" 
     },
     department: { 
-      type: String,
-      default: "General"
+      type: Schema.Types.ObjectId,
+      ref: "Department"
     },
     emailVerified: { 
       type: Date, 
       default: null 
     },
+    hasPassword: {
+      type: Boolean,
+      default: false
+    },
+    salary: {
+      type: Number,
+      default: 0
+    },
+    designation: {
+      type: String,
+      default: "Staff"
+    },
+    notifications: {
+      email: { type: Boolean, default: true },
+      payroll: { type: Boolean, default: true },
+      newJoiners: { type: Boolean, default: true },
+    },
+    twoFactor: {
+      type: Boolean,
+      default: false
+    }
   },
   { 
     timestamps: true // Automatically adds createdAt and updatedAt

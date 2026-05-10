@@ -16,7 +16,10 @@ export const setInitialPassword = async (password: string) => {
 
     await User.findOneAndUpdate(
       { email: session.user.email },
-      { password: hashedPassword }
+      { 
+        password: hashedPassword,
+        hasPassword: true 
+      }
     );
 
     return { success: "Password set! You can now login with email too." };

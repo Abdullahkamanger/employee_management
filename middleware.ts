@@ -1,5 +1,9 @@
-import { auth } from "@/lib/auth"; 
+import NextAuth from "next-auth";
+import { authConfig } from "@/lib/auth.config";
 import { NextResponse } from "next/server";
+
+// We use the edge-compatible version of auth for the middleware
+const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const { nextUrl, auth: session } = req;
@@ -11,8 +15,8 @@ export default auth((req) => {
   const isAdminRoute = nextUrl.pathname.startsWith("/admin");
   const isOnboardingRoute = nextUrl.pathname === "/onboarding";
 
-  // LOG FOR DEBUGGING
-  console.log(`PATH: ${nextUrl.pathname} | ROLE: ${user?.role} | PW: ${user?.hasPassword}`);
+  // LOG FOR DEBUGGING (Optional, remove in production)
+  // console.log(`PATH: ${nextUrl.pathname} | ROLE: ${user?.role} | PW: ${user?.hasPassword}`);
 
   // 2. Redirect logged-in users away from Sign In
   if (isSignInPage && isLoggedIn) {
@@ -23,7 +27,6 @@ export default auth((req) => {
   // 3. Admin Route Protection
   if (isAdminRoute) {
     if (!isLoggedIn) {
-      // FORCE /signin here
       return NextResponse.redirect(new URL("/signin", nextUrl));
     }
 
@@ -32,7 +35,7 @@ export default auth((req) => {
       return NextResponse.redirect(new URL("/", nextUrl));
     }
 
-    // New logic: If admin is logged in but hasn't set password, force onboarding
+    // Force onboarding if password is not set
     if (!user?.hasPassword) {
       return NextResponse.redirect(new URL("/onboarding", nextUrl));
     }
@@ -41,6 +44,7 @@ export default auth((req) => {
   // 4. Onboarding Protection
   if (isOnboardingRoute) {
     if (!isLoggedIn) return NextResponse.redirect(new URL("/signin", nextUrl));
+    
     if (user?.hasPassword) {
       const role = (user?.role || "").toLowerCase();
       return NextResponse.redirect(new URL(role === "admin" ? "/admin" : "/", nextUrl));
@@ -51,6 +55,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  // Make sure this doesn't capture /signin itself to avoid loops
   matcher: ["/admin/:path*", "/onboarding", "/dashboard/:path*"],
 };
