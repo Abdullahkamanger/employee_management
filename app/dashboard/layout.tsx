@@ -9,6 +9,9 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
+  const name = session?.user?.name || "User";
+  const image = session?.user?.image || undefined;
+  const role = session?.user?.role || "Employee";
 
   if (!session) {
     redirect("/signin");
@@ -19,7 +22,7 @@ export default async function DashboardLayout({
       <Sidebar />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <Navbar user={session.user} />
+        <Navbar user={{ name, image, role }} />
 
         <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-gradient-to-br from-transparent to-purple-900/5">
           <div className="max-w-7xl mx-auto">

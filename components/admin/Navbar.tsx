@@ -1,20 +1,20 @@
 "use client";
 
-import { Search, Bell, Menu, User } from "lucide-react";
+import { Search, Bell, Menu } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { getUnreadCount } from "@/lib/message-actions";
 
-interface NavbarProps {
+type NavbarProps ={
   user: {
-    name?: string | null;
-    image?: string | null;
-    role?: string;
+    name: string;
+    image?: string;
+    role: string;
   };
 }
 
-export default function Navbar({ user }: NavbarProps) {
+export default function Navbar( {user} : NavbarProps) {
 const getInitials = (name: string) => {
   return name
     .split(" ")
@@ -57,7 +57,10 @@ const getInitials = (name: string) => {
       {/* Right Side Actions */}
       <div className="flex items-center gap-6">
         {/* Notifications */}
-        <Link href="/admin/messages" className="relative p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-full transition-all">
+        <Link
+          href="/admin/messages"
+          className="bell-shake relative inline-flex p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-full transition-all cursor-pointer"
+        >
           <Bell size={20} />
           {unreadCount > 0 && (
             <span className="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-[#0a0a0c] px-1">

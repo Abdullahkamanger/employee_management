@@ -5,7 +5,10 @@ import User from "@/models/User";
 import { auth } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 
-export async function changePassword(data: any) {
+export async function changePassword(data: {
+  currentPassword: string;
+  newPassword: string;
+}) {
   try {
     const session = await auth();
     if (!session?.user?.email) throw new Error("Unauthorized");
@@ -28,15 +31,16 @@ export async function changePassword(data: any) {
 
     // 2. Hash and Save New Password
     const hashedPassword = await bcrypt.hash(newPassword, 12);
-    
+
     await User.updateOne(
       { _id: user._id },
       { $set: { password: hashedPassword } }
     );
 
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "An unknown Error occured";
     console.error("Change password error:", error);
-    return { success: false, error: error.message || "Failed to update password" };
+    return { success: false, error: message || "Failed to update password" };
   }
 }

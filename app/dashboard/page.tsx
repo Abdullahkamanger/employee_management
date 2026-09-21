@@ -6,6 +6,7 @@ import {
   Calendar, ArrowUpRight, MessageCircle 
 } from "lucide-react";
 import Link from "next/link";
+import {IPayroll} from '@/models/Payroll';
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -34,7 +35,7 @@ export default async function DashboardPage() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-white">Welcome back, {session.user?.name}</h1>
-        <p className="text-slate-400 mt-2">Here's what's happening with your account today.</p>
+        <p className="text-slate-400 mt-2">Here&apos;s what&apos;s happening with your account today.</p>
       </div>
 
       {/* Stats Grid */}
@@ -73,7 +74,7 @@ export default async function DashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {payrolls.length > 0 ? payrolls.map((p: any, i: number) => (
+                {payrolls.length > 0 ? payrolls.map((p: IPayroll, i: number) => (
                   <tr key={i} className="text-sm hover:bg-white/5 transition-colors">
                     <td className="px-6 py-4 font-medium text-white">{p.month}</td>
                     <td className="px-6 py-4 text-slate-300">${p.amount.toLocaleString()}</td>

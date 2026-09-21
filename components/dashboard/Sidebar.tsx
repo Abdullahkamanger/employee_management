@@ -23,7 +23,7 @@ export default function Sidebar() {
     <aside className="hidden md:flex w-72 flex-col bg-black/20 backdrop-blur-xl border-r border-white/5">
       <div className="p-8">
         <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-purple-400 bg-clip-text text-transparent">
-          EMS Portal
+      Employee Plateform
         </h1>
       </div>
 

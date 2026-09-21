@@ -2,7 +2,7 @@
 
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
-import bcrypt from "bcryptjs";
+import bcrypt, { genSaltSync } from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 
@@ -14,7 +14,7 @@ export async function completeOnboarding(password: string, token?: string, email
 
     if (token && email) {
       const user = await User.findOne({ email, setupToken: token });
-      if (!user) {
+      if (!user || user.setupToken !== token || user.hasPassword || user.setupToken === null) {
         return { success: false, error: "Invalid or expired setup link." };
       }
       targetEmail = email;
@@ -27,24 +27,25 @@ export async function completeOnboarding(password: string, token?: string, email
     }
 
     // 1. Hash the password
-    const hashedPassword = await bcrypt.hash(password, 12);
+    const hashedPassword = await bcrypt.hash(password, genSaltSync(10));
 
     // 2. Update the user
     await User.findOneAndUpdate(
       { email: targetEmail },
-      { 
-        password: hashedPassword, 
+      {
+        password: hashedPassword,
         hasPassword: true,
         setupToken: null // Clear the token once used
       }
     );
 
     // Clear cache to allow access to protected routes
-    revalidatePath("/"); 
-    
+    revalidatePath("/");
+
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "failed to complete onboarding";
     console.error("Onboarding error:", error);
-    return { success: false, error: error.message || "Failed to complete onboarding" };
+    return { success: false, error: message };
   }
 }

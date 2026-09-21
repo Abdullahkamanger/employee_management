@@ -8,7 +8,7 @@ import { toast } from "sonner";
 export default function ChangePasswordModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
   const [loading, setLoading] = useState(false);
 
-  if (!isOpen) return null;
+  // if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -38,13 +38,13 @@ export default function ChangePasswordModal({ isOpen, onClose }: { isOpen: boole
   };
 
   return (
-    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
+    <div className={`fixed inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300 transition-all duration-300 ${isOpen ? "opacity-100 pointer-events-auto scale-100" : "opacity-0 pointer-events-none scale-95"}`}>
       <div className="w-full max-w-md bg-slate-900 border border-white/10 p-8 rounded-3xl shadow-2xl animate-in zoom-in-95 duration-200">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xl font-bold text-white flex items-center gap-2">
             <ShieldCheck className="text-purple-400" size={24} /> Update Security
           </h3>
-          <button onClick={onClose} className="text-slate-500 hover:text-white transition-all p-1 hover:bg-white/5 rounded-lg">
+          <button onClick={onClose} className="text-slate-500 hover:text-red-600 transition-all p-1 hover:bg-white/5 rounded cursor-pointer hover:scale-110 hover:rotate-95 active:rotate-0">
             <X size={24} />
           </button>
         </div>
@@ -87,7 +87,7 @@ export default function ChangePasswordModal({ isOpen, onClose }: { isOpen: boole
 
           <button 
             disabled={loading}
-            className="w-full bg-white text-black font-bold py-4 rounded-xl mt-4 flex items-center justify-center gap-2 hover:bg-slate-200 disabled:bg-slate-500 transition-all shadow-xl shadow-white/5 active:scale-[0.98]"
+            className={`w-full bg-white text-black font-bold py-4 rounded-xl mt-4 flex items-center justify-center gap-2 hover:bg-slate-200 disabled:bg-slate-500 transition-all shadow-xl shadow-white/5 active:scale-[0.98]  ${loading? "cursor-not-allowed cursor-event-none" : "cursor-pointer"}`}
           >
             {loading ? (
               <Loader2 className="animate-spin" size={20} />

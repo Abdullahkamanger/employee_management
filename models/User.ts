@@ -7,7 +7,7 @@ export interface IUser extends mongoose.Document {
   password?: string; // Optional because Google users don't have passwords
   image?: string;
   role: "Admin" | "Manager" | "Employee";
-  department?: mongoose.Types.ObjectId | any;
+  department?: mongoose.Types.ObjectId | null;
   emailVerified: Date | null;
   hasPassword: boolean;
   salary: number;
@@ -40,7 +40,8 @@ const UserSchema = new Schema<IUser>(
       select: false, // Prevents password from being returned in queries by default
     },
     image: { 
-      type: String 
+      type: String ,
+      default: null
     },
     role: { 
       type: String, 

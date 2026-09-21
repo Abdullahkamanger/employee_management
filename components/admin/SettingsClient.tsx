@@ -2,21 +2,36 @@
 
 import { useState } from "react";
 import { updateUserSettings } from "@/lib/settings-actions";
-import { 
-  Save, Loader2, Camera, User, 
-  Lock, Bell, Shield, LayoutGrid, 
-  FileText, Activity, Server, Database 
+import Image from "next/image";
+import {
+  Save, Loader2, Camera, User,
+  Lock, Bell, Shield,
+  FileText, Activity, Server, Database
 } from "lucide-react";
 import { toast } from "sonner";
 import ChangePasswordModal from "./ChangePasswordModal";
+type InitialSettings = {
+    name: string;
+    email: string;
+    image?: string;
+    status: "Pending" | "Active" | "Inactive";
+    setupToken?: string;
+    notifications?: {
+      email: boolean;
+      payroll: boolean;
+      newJoiners: boolean;
+    };
+    twoFactor?: boolean;
+  };
 
-export default function SettingsClient({ initialUser }: { initialUser: any }) {
+
+export default function SettingsClient({initialUser}: { initialUser: Partial<InitialSettings> }) {
   const [isSaving, setIsSaving] = useState(false);
   const [isPassModalOpen, setIsPassModalOpen] = useState(false);
-  
+
   // State for Profile
   const [name, setName] = useState(initialUser?.name || "");
-  
+
   // State for Security Toggle
   const [twoFactor, setTwoFactor] = useState(initialUser?.twoFactor || false);
 
@@ -29,10 +44,10 @@ export default function SettingsClient({ initialUser }: { initialUser: any }) {
 
   const handleSave = async () => {
     setIsSaving(true);
-    const res = await updateUserSettings({ 
-      name, 
-      notifications: notifs, 
-      twoFactor 
+    const res = await updateUserSettings({
+      name,
+      notifications: notifs,
+      twoFactor
     });
 
     if (res.success) {
@@ -54,14 +69,14 @@ export default function SettingsClient({ initialUser }: { initialUser: any }) {
 
         <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
           <div className="relative group">
-            <div className="w-24 h-24 rounded-2xl bg-slate-800 border-2 border-white/10 flex items-center justify-center overflow-hidden">
+            <div className="w-24 h-24 rounded-2xl bg-slate-800 border-2 border-white/10 flex items-center justify-center overflow-hidden relative">
               {initialUser?.image ? (
-                 <img src={initialUser.image} alt="Profile" className="object-cover w-full h-full" />
+                <Image src={initialUser.image} alt="Profile" className="object-cover w-full h-auto" width={500} height={500} />
               ) : (
                 <span className="text-2xl font-bold text-slate-500">{name?.[0] || "A"}</span>
               )}
             </div>
-            <button className="absolute -bottom-2 -right-2 p-2 bg-purple-600 rounded-lg text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+            <button className="absolute -bottom-2 -right-2 p-2 bg-purple-600 rounded-lg text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
               <Camera size={16} />
             </button>
           </div>
@@ -69,7 +84,7 @@ export default function SettingsClient({ initialUser }: { initialUser: any }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 w-full">
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Full Name</label>
-              <input 
+              <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:ring-2 focus:ring-purple-500/50 outline-none transition-all"
@@ -78,9 +93,9 @@ export default function SettingsClient({ initialUser }: { initialUser: any }) {
             </div>
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Email Address</label>
-              <input 
-                type="email" 
-                defaultValue={initialUser?.email || ""} 
+              <input
+                type="email"
+                defaultValue={initialUser?.email || ""}
                 disabled
                 className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-2.5 text-sm text-slate-500 cursor-not-allowed"
               />
@@ -99,9 +114,9 @@ export default function SettingsClient({ initialUser }: { initialUser: any }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <p className="text-sm text-slate-400">Update your password to keep your account secure.</p>
-            <button 
+            <button
               onClick={() => setIsPassModalOpen(true)}
-              className="text-sm font-bold text-purple-400 hover:text-purple-300 transition-colors"
+              className="text-sm font-bold text-purple-400 hover:text-purple-300 transition-colors cursor-pointer"
             >
               Change Password →
             </button>
@@ -111,9 +126,9 @@ export default function SettingsClient({ initialUser }: { initialUser: any }) {
               <p className="text-sm font-medium text-white">Two-Factor Authentication</p>
               <p className="text-xs text-slate-500">Add an extra layer of security</p>
             </div>
-            <button 
+            <button
               onClick={() => setTwoFactor(!twoFactor)}
-              className={`w-12 h-6 rounded-full transition-all relative ${twoFactor ? 'bg-purple-600' : 'bg-slate-700'}`}
+              className={`w-12 h-6 rounded-full transition-all relative ${twoFactor ? 'bg-purple-600' : 'bg-slate-700'} cursor-pointer`}
             >
               <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${twoFactor ? 'left-7' : 'left-1'}`} />
             </button>
@@ -127,7 +142,7 @@ export default function SettingsClient({ initialUser }: { initialUser: any }) {
           <Bell size={20} />
           <h3 className="text-lg font-semibold text-white">Notifications</h3>
         </div>
-        
+
         <div className="space-y-4">
           {Object.entries(notifs).map(([key, value]) => (
             <div key={key} className="flex items-center justify-between py-2">
@@ -135,10 +150,10 @@ export default function SettingsClient({ initialUser }: { initialUser: any }) {
                 <p className="text-sm text-white capitalize font-medium">{key.replace(/([A-Z])/g, ' $1')}</p>
                 <p className="text-xs text-slate-500">Receive alerts related to {key.toLowerCase()}</p>
               </div>
-              <input 
-                type="checkbox" 
+              <input
+                type="checkbox"
                 checked={value}
-                onChange={(e) => setNotifs({...notifs, [key]: e.target.checked})}
+                onChange={(e) => setNotifs({ ...notifs, [key]: e.target.checked })}
                 className="accent-purple-600 h-5 w-5 cursor-pointer"
               />
             </div>
@@ -152,7 +167,7 @@ export default function SettingsClient({ initialUser }: { initialUser: any }) {
           <FileText size={20} />
           <h3 className="text-lg font-semibold text-white">Organization Policies</h3>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[
             { name: "Remote Work Policy", size: "1.2 MB", date: "Jan 2024" },
@@ -182,7 +197,7 @@ export default function SettingsClient({ initialUser }: { initialUser: any }) {
           <Activity size={20} />
           <h3 className="text-lg font-semibold text-white">System Status</h3>
         </div>
-        
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: "Database", status: "Operational", color: "text-emerald-400", icon: Database },
@@ -201,19 +216,19 @@ export default function SettingsClient({ initialUser }: { initialUser: any }) {
 
       {/* Save Button */}
       <div className="fixed bottom-8 right-8 z-50">
-        <button 
+        <button
           onClick={handleSave}
           disabled={isSaving}
-          className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-2 transition-all shadow-2xl shadow-purple-500/40 active:scale-95 disabled:opacity-50"
+          className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-2 transition-all shadow-2xl shadow-purple-500/40 active:scale-95 disabled:opacity-50 cursor-pointer"
         >
           {isSaving ? <Loader2 className="animate-spin" /> : <Save size={20} />}
           Save All Settings
         </button>
       </div>
 
-      <ChangePasswordModal 
-        isOpen={isPassModalOpen} 
-        onClose={() => setIsPassModalOpen(false)} 
+      <ChangePasswordModal
+        isOpen={isPassModalOpen}
+        onClose={() => setIsPassModalOpen(false)}
       />
     </div>
   );

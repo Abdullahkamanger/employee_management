@@ -3,13 +3,20 @@
 import { Bell, Search, User as UserIcon } from "lucide-react";
 import Image from "next/image";
 
-export default function Navbar({ user }: { user: any }) {
+type User = {
+  name: string;
+  role: string;
+  image?: string;
+};
+
+export default function Navbar({ user }: { user: User}) {
   return (
     <header className="h-20 border-b border-white/5 bg-black/10 backdrop-blur-md flex items-center justify-between px-8 sticky top-0 z-50">
       <div className="flex items-center gap-4 flex-1">
         <div className="relative w-96 group hidden lg:block">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-purple-400 transition-colors" size={18} />
           <input 
+          
             type="text" 
             placeholder="Search portal..." 
             className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-12 pr-4 text-sm text-white focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all"

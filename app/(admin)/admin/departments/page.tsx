@@ -1,4 +1,5 @@
 import { getDepartments } from "@/lib/dept-actions";
+
 import DeptHeader from "@/components/admin/DeptHeader";
 import DeptCard from "@/components/admin/DeptCard";
 import { LayoutGrid } from "lucide-react";

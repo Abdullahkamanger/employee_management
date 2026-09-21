@@ -1,28 +1,47 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { sendMessage, getConversation, markAsRead } from "@/lib/message-actions";
 import { Send, Loader2, User as UserIcon, Check, CheckCheck } from "lucide-react";
 import { toast } from "sonner";
 
 export default function MessageCenter({ targetUserId, currentUserId, title = "Chat" }: { targetUserId: string, currentUserId: string, title?: string }) {
-  const [messages, setMessages] = useState<any[]>([]);
+  type Message = {
+    sender: string;
+    receiver: string;
+    content: string;
+    createdAt: Date;
+    isRead: boolean;
+  };
+  const [messages, setMessages] = useState<Partial<Message>[]>([]);
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    fetchMessages();
-    markAsRead(targetUserId); // Mark incoming messages as read on mount
 
+  const fetchMessages = useCallback(async () => {
+    const res = await getConversation(targetUserId);
+    if (res.success) {
+      setMessages(res.data);
+    }
+    setFetching(false);
+  }, [targetUserId])
+
+
+  useEffect(() => {
+    const loadMesages = async () => {
+      await fetchMessages();
+    }
+    loadMesages();
+    markAsRead(targetUserId); // Mark incoming messages as read on mount
     const interval = setInterval(() => {
       fetchMessages();
       markAsRead(targetUserId); // Keep marking incoming as read
-    }, 5000); 
+    }, 5000);
 
     return () => clearInterval(interval);
-  }, [targetUserId]);
+  }, [targetUserId, fetchMessages]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -30,13 +49,7 @@ export default function MessageCenter({ targetUserId, currentUserId, title = "Ch
     }
   }, [messages]);
 
-  const fetchMessages = async () => {
-    const res = await getConversation(targetUserId);
-    if (res.success) {
-      setMessages(res.data);
-    }
-    setFetching(false);
-  };
+
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,20 +90,26 @@ export default function MessageCenter({ targetUserId, currentUserId, title = "Ch
             const isMe = m.sender === currentUserId;
             return (
               <div key={i} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] p-4 rounded-2xl text-sm relative group ${
-                  isMe ? 'bg-purple-600 text-white rounded-tr-none' : 'bg-white/10 text-slate-200 rounded-tl-none'
-                }`}>
+                <div className={`max-w-[80%] p-4 rounded-2xl text-sm relative group ${isMe ? 'bg-green-900 text-white rounded-tr-none' : 'bg-white/10 text-white-200 rounded-tl-none'
+                  }`}>
                   {m.content}
                   <div className={`flex items-center gap-1 mt-2 ${isMe ? 'justify-end' : 'justify-start'}`}>
                     <p className={`text-[10px] opacity-50 ${isMe ? 'text-right' : 'text-left'}`}>
-                      {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {m.createdAt ? (
+                        new Date(m.createdAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      ) : (
+                        "Unknown time"
+                      )}
                     </p>
                     {isMe && (
-                      <div className="flex items-center ml-1">
+                      <div className="flex items-center ml-1 -space-x-1">
                         {m.isRead ? (
-                          <CheckCheck size={14} className="text-sky-400 drop-shadow-[0_0_3px_rgba(56,189,248,0.5)]" />
+                          <CheckCheck size={14} strokeWidth={5} className="text-sky-500" />
                         ) : (
-                          <Check size={14} className="text-slate-500" />
+                          <Check size={14} strokeWidth={5} className="text-white-500/60" />
                         )}
                       </div>
                     )}
@@ -107,14 +126,14 @@ export default function MessageCenter({ targetUserId, currentUserId, title = "Ch
       </div>
 
       <form onSubmit={handleSend} className="p-6 bg-white/5 border-t border-white/5 flex gap-4">
-        <input 
-          type="text" 
+        <input
+          type="text"
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Type your message..."
           className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-1 focus:ring-purple-500/50 transition-all placeholder:text-slate-700"
         />
-        <button 
+        <button
           disabled={loading || !content.trim()}
           className="bg-white text-slate-900 p-3 rounded-xl hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
         >

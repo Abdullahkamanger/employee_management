@@ -38,11 +38,11 @@ export default function PayrollStatusAction({ id, currentStatus }: { id: string,
   };
 
   return (
-    <div className="relative">
+    <div className="relative cursor-pointer">
       <button 
         disabled={loading}
         onClick={() => setIsOpen(!isOpen)}
-        className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 border-2 ${getStatusStyles(currentStatus)}`}
+        className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95 border-2 ${getStatusStyles(currentStatus)} cursor-pointer ${loading ? 'opacity-50 pointer-events-none' : ''} hover:shadow-[0_0_15px_rgba(255,255,255,0.2)]`}
       >
         {loading ? (
           <Loader2 size={12} className="animate-spin" />
@@ -57,8 +57,8 @@ export default function PayrollStatusAction({ id, currentStatus }: { id: string,
         )}
       </button>
 
-      {isOpen && (
-        <div className="absolute top-full right-0 mt-3 w-40 bg-[#121214] border-2 border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 py-2 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      {/* Dropdown Menu */}
+        <div className={`absolute top-full right-0 mt-3 w-40 bg-[#121214] border-2 border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 py-2 overflow-hidden transition-all ${isOpen ? 'visible translate-y-2 translate-x-[-2px]  opacity-100 scale-100' : 'invisible translate-y-0 translate-x-0 opacity-0 scale-95 pointer-events-none'}`}>
           <p className="px-4 py-2 text-[9px] font-black text-slate-500 uppercase tracking-widest border-b border-white/5 mb-1">Update Status</p>
           {(["Pending", "Processing", "Paid"] as const).map((status) => (
             <button
@@ -73,7 +73,7 @@ export default function PayrollStatusAction({ id, currentStatus }: { id: string,
             </button>
           ))}
         </div>
-      )}
+     
       
       {/* Backdrop for closing the dropdown */}
       {isOpen && (

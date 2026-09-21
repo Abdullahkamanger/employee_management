@@ -9,11 +9,15 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
+  const name = session?.user?.name || "User";
+  const image = session?.user?.image || undefined;
+  const role = session?.user?.role as string;
 
   // Second layer of security: Ensure only Admins can enter this layout
   if (!session || (session.user.role).toLowerCase() !== "admin") {
     redirect("/signin");
   }
+  
 
   return (
     <div className="flex h-screen bg-[#0a0a0c] text-slate-200">
@@ -22,7 +26,7 @@ export default async function AdminLayout({
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top Navbar */}
-        <Navbar user={session.user} />
+        <Navbar user={{ name, image, role }} />
 
         {/* Dynamic Content Area */}
         <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-gradient-to-br from-transparent to-purple-900/5">

@@ -4,7 +4,7 @@ import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import clientPromise from "@/lib/DBClient";
 import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/db";
-import User from "@/models/User"; 
+import User from "@/models/User";
 import { authConfig } from "./auth.config";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -20,23 +20,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        console.log("LOGIN ATTEMPT:", credentials?.email);
         await connectDB();
-        
+
         // Find user by email
         const user = await User.findOne({ email: credentials?.email }).select("+password");
-        console.log("USER FOUND:", !!user);
-        
+
         // If no user or if it's a Google user (no password), return null
         if (!user || !user.password) {
-          console.log("NO USER OR NO PASSWORD");
-          return null;
+          // console.log("NO USER OR NO PASSWORD");
+          throw new Error("No User OR No Password Please try login in with google")
         }
 
         // Block deactivated accounts
         if (user.status === "Inactive") {
-          console.log("USER INACTIVE");
-          return null;
+          // console.log("USER INACTIVE");
+          throw new Error("Account_InActive")
         }
 
         // Check password
@@ -44,18 +42,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           credentials.password as string,
           user.password
         );
-        console.log("PASSWORD VALID:", isValid);
+        // console.log("PASSWORD VALID:", isValid);
 
-        if (!isValid) return null;
+        if (!isValid) throw new Error("InValid Credentials")
 
         // Return the user object with all needed fields
         return {
           id: user._id.toString(),
           email: user.email,
           name: user.name,
-          role: user.role, 
+          role: user.role,
           hasPassword: user.hasPassword,
           status: user.status,
+          image: user.image || null,
+          department: user.department,
+          designation: user
         };
       },
     }),
@@ -66,20 +67,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // Base logic from authConfig
       if (user) {
         token.id = user.id;
-        token.role = (user as any).role;
-        token.hasPassword = (user as any).hasPassword;
-        token.status = (user as any).status;
+        token.role = user.role;
+        token.hasPassword = user.hasPassword;
+        token.status = user.status;
+        token.department = user.department ?? null;
       }
 
       // Special handling for Google login to sync custom fields from DB
       if (account?.provider === "google") {
-         await connectDB();
-         const dbUser = await User.findOne({ email: token.email });
-         if (dbUser) {
-           token.role = dbUser.role;
-           token.hasPassword = dbUser.hasPassword;
-           token.status = dbUser.status || "Active";
-         }
+        await connectDB();
+        const dbUser = await User.findOne({ email: token.email });
+        if (dbUser) {
+          token.role = dbUser.role;
+          token.hasPassword = dbUser.hasPassword;
+          token.status = dbUser.status;
+        }
       }
 
       return token;

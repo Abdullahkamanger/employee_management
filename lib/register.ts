@@ -8,7 +8,7 @@ import { z } from "zod";
 // 1. Define a Validation Schema
 const RegisterSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
+  email: z.email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
@@ -36,7 +36,7 @@ export const registerUser = async (values: z.infer<typeof RegisterSchema>) => {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // 6. Create the user
-    console.log("CREATING PENDING USER:", email);
+    // console.log("CREATING PENDING USER:", email);
     await User.create({
       name,
       email,
@@ -48,7 +48,8 @@ export const registerUser = async (values: z.infer<typeof RegisterSchema>) => {
 
     return { success: "User created successfully!" };
   } catch (error) {
-    console.error("Registration Error:", error);
-    return { error: "Something went wrong. Please try again." };
+    const message = error instanceof Error ? error.message : "Failed to Register";
+    // console.error("Registration Error:", error);
+    return {success:false, error: message };
   }
 };

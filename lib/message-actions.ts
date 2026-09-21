@@ -3,7 +3,7 @@
 import mongoose from "mongoose";
 import { connectDB } from "@/lib/db";
 import Message from "@/models/Message";
-import User from "@/models/User";
+// import User from "@/models/User";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 
@@ -24,9 +24,10 @@ export async function sendMessage(receiverId: string, content: string) {
     revalidatePath("/dashboard");
     
     return { success: true };
-  } catch (error: any) {
-    console.error("Error sending message:", error);
-    return { success: false, error: error.message || "Failed to send message" };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : " Failed to send message"
+    // console.error("Error sending message:", error);
+    return { success: false, error: message };
   }
 }
 
@@ -36,14 +37,14 @@ export async function getConversation(otherUserId?: string) {
     if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
     await connectDB();
-
+ const targetUserId = otherUserId;
     // If no otherUserId, we assume employee talking to an Admin
-    let targetUserId = otherUserId;
-    if (!targetUserId) {
-      const admin = await User.findOne({ role: "Admin" });
-      if (!admin) return { success: false, error: "No admin found" };
-      targetUserId = admin._id.toString();
-    }
+   
+    // if (!targetUserId) {
+    //   const admin = await User.findOne({ role: "Admin" });
+    //   if (!admin) return { success: false, error: "No admin found" };
+    //   targetUserId = admin._id.toString();
+    // }
 
     const messages = await Message.find({
       $or: [
@@ -56,8 +57,9 @@ export async function getConversation(otherUserId?: string) {
 
     return { success: true, data: JSON.parse(JSON.stringify(messages)) };
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Error fetching conversation"
     console.error("Error fetching conversation:", error);
-    return { success: false, data: [] };
+    return { success: false, data: [] , error:message};
   }
 }
 
@@ -134,7 +136,8 @@ export async function markAsRead(senderId: string) {
     revalidatePath("/admin/messages");
     return { success: true };
   } catch (error) {
-    return { success: false };
+    const message = error instanceof Error ? error.message : "Error marking messages as read"
+    return { success: false, error:message };
   }
 }
 
@@ -151,6 +154,6 @@ export async function getUnreadCount() {
 
     return { success: true, count };
   } catch (error) {
-    return { success: false, count: 0 };
+    return { success: false, count: 0, error: error instanceof Error ? error.message : "Error fetching unread count" };
   }
 }

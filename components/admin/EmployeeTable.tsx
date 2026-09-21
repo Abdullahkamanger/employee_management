@@ -6,12 +6,14 @@ import { deleteEmployee } from "@/lib/employee-actions";
 import { toast } from "sonner";
 import DeleteConfirmModal from "./DeleteConfirmModal";
 import AddEditEmployeeModal from "./AddEditEmployeeModal";
+import Image from "next/image";
 
-interface Employee {
+type Employee = {
   _id: string;
   name: string;
   email: string;
   role: string;
+  image?: string;
   department?: {
     _id: string;
     name: string;
@@ -55,11 +57,15 @@ export default function EmployeeTable({ employees }: { employees: Employee[] }) 
           </thead>
           <tbody className="divide-y divide-white/5">
             {employees.map((emp) => (
-              <tr key={emp._id} className="hover:bg-white/[0.02] transition-colors group">
+              <tr key={emp._id} className="hover:bg-white/[0.02] transition-colors group cursor-pointer">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 font-bold border border-purple-500/20 transition-transform group-hover:scale-110">
-                      {emp.name[0].toUpperCase()}
+                      {emp.image ? (
+                        <Image src={emp.image} alt={emp.name} width={36} height={36} className="rounded-lg" />
+                      ) : (
+                        emp.name[0].toUpperCase()
+                      )}
                     </div>
                     <div>
                       <p className="text-sm font-medium text-white">{emp.name}</p>
@@ -107,7 +113,7 @@ export default function EmployeeTable({ employees }: { employees: Employee[] }) 
                       <>
                         <button 
                           onClick={() => setEditEmployee(emp)}
-                          className="p-2 text-slate-500 hover:text-white hover:bg-white/5 rounded-lg transition-all active:scale-90"
+                          className="p-2 text-slate-500 hover:text-white hover:bg-white/5 rounded-lg transition-all active:scale-90 cursor-pointer transition-all hover:scale-110 hover:rotate-10 active:rotate-0"
                         >
                           <Edit2 size={16} />
                         </button>
@@ -116,7 +122,7 @@ export default function EmployeeTable({ employees }: { employees: Employee[] }) 
                             setDeleteId(emp._id);
                             setDeleteName(emp.name);
                           }}
-                          className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all active:scale-90"
+                          className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-all active:scale-90 cursor-pointer transition-all hover:scale-110 hover:rotate-10 active:rotate-0"
                         >
                           <Trash2 size={16} />
                         </button>

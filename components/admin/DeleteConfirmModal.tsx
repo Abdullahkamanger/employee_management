@@ -18,7 +18,7 @@ export default function DeleteConfirmModal({
 }) {
   const [loading, setLoading] = useState(false);
 
-  if (!isOpen) return null;
+  // if (!isOpen) return null;
 
   const handleConfirm = async () => {
     setLoading(true);
@@ -28,7 +28,12 @@ export default function DeleteConfirmModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
+   <div
+  className={`fixed inset-0 z-[110] flex items-center justify-center
+    bg-black/10 backdrop-blur-sm p-4
+    transition-all duration-300 
+    ${isOpen ? "opacity-100 pointer-events-auto scale-100" : "opacity-0 pointer-events-none scale-95"}`}
+>
       <div className="w-full max-w-md bg-slate-900 border border-red-500/20 p-8 rounded-3xl shadow-2xl animate-in zoom-in-95 duration-200 relative overflow-hidden">
         {/* Danger Glow */}
         <div className="absolute -top-24 -left-24 w-48 h-48 bg-red-600/10 blur-[80px] rounded-full pointer-events-none" />
@@ -39,7 +44,7 @@ export default function DeleteConfirmModal({
           </div>
           <button 
             onClick={onClose} 
-            className="text-slate-400 hover:text-white transition-colors"
+            className="text-slate-400 hover:text-purple-600 cursor-pointer transition-all hover:scale-110 hover:rotate-95 active:rotate-0"
           >
             <X size={20} />
           </button>
@@ -55,7 +60,7 @@ export default function DeleteConfirmModal({
             <button 
               disabled={loading}
               onClick={handleConfirm}
-              className="w-full bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+              className="w-full bg-red-600 hover:bg-red-900 disabled:opacity-50 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
             >
               {loading ? (
                 <Loader2 className="animate-spin" size={18} />
@@ -66,13 +71,14 @@ export default function DeleteConfirmModal({
             <button 
               disabled={loading}
               onClick={onClose}
-              className="w-full bg-white/5 hover:bg-white/10 text-white font-semibold py-3.5 rounded-xl border border-white/5 transition-all"
+              className="w-full bg-white/5 hover:bg-white/30 text-white font-semibold py-3.5 rounded-xl border border-white/5 transition-all cursor-pointer"
             >
               Cancel
-            </button>
+            </button> 
           </div>
         </div>
       </div>
+      
     </div>
   );
 }

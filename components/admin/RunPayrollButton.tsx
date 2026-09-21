@@ -9,8 +9,15 @@ export default function RunPayrollButton() {
   const [loading, setLoading] = useState(false);
 
   const handleRunPayroll = async () => {
-    const month = "May 2026"; // In a real app, this could be dynamic
-    if (confirm(`Are you sure you want to run payroll for ${month}?`)) {
+    const month = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
+
+    if (await toast.promise(new Promise((resolve) => {
+      const confirmed = window.confirm(`Are you sure you want to run payroll for ${month}?`);
+      resolve(confirmed);
+    }), {
+      loading: `Generating payroll for ${month}...`,
+      error: `Failed to generate payroll for ${month}.`
+    })) {
       setLoading(true);
       const res = await generateMonthlyPayroll(month);
       if (res.success) {
@@ -23,7 +30,7 @@ export default function RunPayrollButton() {
   };
 
   return (
-    <button 
+    <button
       onClick={handleRunPayroll}
       disabled={loading}
       className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-800 text-white px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all shadow-lg shadow-emerald-500/20 active:scale-95"

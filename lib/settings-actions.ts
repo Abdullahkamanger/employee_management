@@ -20,7 +20,15 @@ export async function updateUserSettings(data: {
 
     await connectDB();
 
-    const updateData: any = {};
+    const updateData: {
+      name?: string;
+      notifications?: {
+        email: boolean;
+        payroll: boolean;
+        newJoiners: boolean;
+      };
+      twoFactor?: boolean;
+    } = {};
     if (data.name) updateData.name = data.name;
     if (data.notifications) updateData.notifications = data.notifications;
     if (typeof data.twoFactor !== "undefined") updateData.twoFactor = data.twoFactor;
@@ -32,8 +40,9 @@ export async function updateUserSettings(data: {
 
     revalidatePath("/admin/settings");
     return { success: true };
-  } catch (error: any) {
-    console.error("Settings update error:", error);
-    return { success: false, error: error.message || "Failed to update settings" };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to update settings";
+    // console.error("Settings update error:", error);
+    return { success: false, error: message };
   }
 }

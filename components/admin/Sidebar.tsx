@@ -24,7 +24,7 @@ export default function Sidebar() {
     <aside className="hidden md:flex w-72 flex-col bg-black/20 backdrop-blur-xl border-r border-white/5">
       <div className="p-8">
         <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-purple-400 bg-clip-text text-transparent">
-          EMS Pro
+          Employee Manager
         </h1>
       </div>
 
@@ -51,7 +51,7 @@ export default function Sidebar() {
       <div className="p-4 mt-auto border-t border-white/5">
         <button 
           onClick={() => signOut()}
-          className="flex items-center gap-3 w-full px-4 py-3 text-slate-400 hover:text-red-400 hover:bg-red-500/5 rounded-xl transition-all"
+          className="flex items-center gap-3 w-full px-4 py-3 text-slate-400 hover:text-red-400 hover:bg-red-500/5 rounded-xl transition-all cursor-pointer"
         >
           <LogOut size={20} />
           <span className="font-medium">Sign Out</span>

@@ -1,15 +1,46 @@
 "use server";
 
 import { connectDB } from "@/lib/db"; 
-import User, { IUser } from "@/models/User"; 
+import User from "@/models/User"; 
 import { revalidatePath } from "next/cache";
 import { sendInviteEmail, sendApprovalEmail } from "./mail";
 
-export async function getAllEmployees(filters?: { search?: string; department?: string; status?: string }) {
+
+type UserType = {
+   name: string;
+    email: string;
+    password?: string; // Optional because Google users don't have passwords
+    image?: string;
+    role: "Admin" | "Manager" | "Employee";
+    department?: string | null;
+    emailVerified: Date | null;
+    hasPassword: boolean;
+    salary: number;
+    designation: string;
+    status: "Pending" | "Active" | "Inactive";
+    setupToken?: string;
+    notifications?: {
+      email: boolean;
+      payroll: boolean;
+      newJoiners: boolean;
+    }
+};
+
+
+
+
+export async function getAllEmployees(filters?: { search?: string; department?: string; status?: string,role?: "Employee" | "Admin" | "Manager" | { $in: Array<"Employee" | "Admin" | "Manager"> } }) {
   try {
     await connectDB();
     
-    let query: any = {};
+    const query: {
+      name?:object,
+      department?:string,
+      role?: "Employee" | "Admin" | "Manager" | { $in: Array<"Employee" | "Admin" | "Manager"> }
+      status?:string | object,
+
+
+    } = {};
     
     if (filters?.search) {
       query.name = { $regex: filters.search, $options: "i" };
@@ -26,6 +57,9 @@ export async function getAllEmployees(filters?: { search?: string; department?: 
         query.status = filters.status;
       }
     }
+    if (filters?.role) {
+      query.role = filters.role;
+    }
 
     const employees = await User.find(query)
       .select("-password") 
@@ -34,47 +68,44 @@ export async function getAllEmployees(filters?: { search?: string; department?: 
 
     return { success: true, data: JSON.parse(JSON.stringify(employees)) };
   } catch (error) {
-    console.error("Error fetching employees:", error);
-    return { success: false, error: "Failed to fetch employees" };
+  //  console.error("Error fetching employees:", error);
+  const message = error instanceof Error ? error.message : "Failed to fetch employees"
+    return { success: false, error: message };
   }
 }
 
-export async function createEmployee(data: { 
-  name: string; 
-  email: string; 
-  role: string; 
-  department?: string;
-  salary?: number;
-  designation?: string;
-}) {
+
+
+export async function createEmployee(data: Partial<UserType>) {
   try {
     await connectDB();
     
     const setupToken = crypto.randomUUID();
     
     // Create new user with hasPassword: false and department link
-    await User.create({
+    const newUser = await User.create({
       name: data.name,
       email: data.email,
       role: data.role,
       department: data.department,
       salary: data.salary || 0,
-      designation: data.designation || "Staff",
+      designation: data.designation || "Un-Assigned",
       hasPassword: false, 
       status: "Active",
       setupToken: setupToken,
     });
 
     // Send the invite email
-    await sendInviteEmail(data.email, data.name, setupToken);
+    await sendInviteEmail(newUser.email as string, newUser.name as string, newUser.setupToken);
 
     // This clears the cache so the Employee Table updates immediately
     revalidatePath("/admin/employees");
     
     return { success: true };
-  } catch (error: any) {
-    console.error("Error creating employee:", error);
-    return { success: false, error: error.message || "Failed to create employee" };
+  } catch (error) {
+    const message = error instanceof Error ? error.message :" Failed to create Employee"
+    // console.error("Error creating employee:", error);
+    return { success: false, error: message };
   }
 }
 
@@ -84,12 +115,13 @@ export async function deleteEmployee(id: string) {
     await User.findByIdAndDelete(id);
     revalidatePath("/admin/employees");
     return { success: true };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to delete employee" };
+  } catch (error) {
+    const message = error instanceof Error? error.message : "Failed to delete Employee"
+    return { success: false, error: message};
   }
 }
 
-export async function updateEmployee(id: string, data: Partial<IUser>) {
+export async function updateEmployee(id: string, data: Partial<UserType>) {
   try {
     await connectDB();
     
@@ -104,8 +136,9 @@ export async function updateEmployee(id: string, data: Partial<IUser>) {
     await User.findByIdAndUpdate(id, data);
     revalidatePath("/admin/employees");
     return { success: true };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to update employee" };
+  } catch (error) {
+    const message = error instanceof Error ? error.message :"Failed to update Employee"
+    return { success: false, error:message };
   }
 }
 
@@ -121,8 +154,9 @@ export async function getEmployeeProfile(email: string) {
     
     return { success: true, data: JSON.parse(JSON.stringify(user)) };
   } catch (error) {
-    console.error("Error fetching employee profile:", error);
-    return { success: false, error: "Failed to fetch profile" };
+    // console.error("Error fetching employee profile:", error);
+    const message = error instanceof Error ? error.message :"Failed to fetch profile";
+    return { success: false, error: message };
   }
 }
 
@@ -134,7 +168,8 @@ export async function getAdminUsers() {
     }).select("_id name email").lean();
     return { success: true, data: JSON.parse(JSON.stringify(admins)) };
   } catch (error) {
-    console.error("Error fetching admin users:", error);
-    return { success: false, data: [] };
+    // console.error("Error fetching admin users:", error);
+    const message = error instanceof Error ? error.message : "Failed to fetch admin users";
+    return { success: false, error: message, data: [] };
   }
 }
