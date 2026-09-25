@@ -4,16 +4,27 @@ import mongoose, { Schema, model, models } from "mongoose";
 export interface IUser extends mongoose.Document {
   name: string;
   email: string;
-  password?: string; // Optional because Google users don't have passwords
-  image?: string;
+  password?: string | null; // Optional because Google users don't have passwords
+  image?: string | null;
   role: "Admin" | "Manager" | "Employee";
   department?: mongoose.Types.ObjectId | null;
   emailVerified: Date | null;
-  hasPassword: boolean;
-  salary: number;
+  // hasPassword: boolean;
+ payStructure: {
+ payBasis: "Hourly" | "Salaried" | "Piece_Rate" | "Daily" | "Commission" | "Stipend";
+  baseRate: mongoose.Types.Decimal128;
+  overtimeRate?: mongoose.Types.Decimal128;
+  payFrequency:"Daily" | "Weekly" | "Biweekly" | "Semimonthly" | "Monthly";
+  currency: string;
+  pieceRateUnit?: string;
+  effectiveFrom: Date;
+}
   designation: string;
-  status: "Pending" | "Active" | "Inactive";
-  setupToken?: string;
+  employmentType: "Full_Time" | "Part_Time" | "Temporary" | "Intern" | "Seasonal" | "Contractor";
+  status: "Pending" | "Active" | "Inactive" | "Terminated" | "Suspended";
+ setupTokenHash?: string;
+setupTokenExpiresAt?: Date;
+setupTokenUsedAt?: Date;
   notifications?: {
     email: boolean;
     payroll: boolean;
@@ -38,6 +49,7 @@ const UserSchema = new Schema<IUser>(
     password: { 
       type: String, 
       select: false, // Prevents password from being returned in queries by default
+        default: null
     },
     image: { 
       type: String ,
@@ -50,19 +62,27 @@ const UserSchema = new Schema<IUser>(
     },
     department: { 
       type: Schema.Types.ObjectId,
-      ref: "Department"
+      ref: "Department",
+      default: null
+    },
+    employmentType:{
+      type: String,
+      enum: ["Full_Time", "Part_Time", "Temporary", "Intern", "Seasonal", "Contractor"],
+      required: [true, "Employment type is required"],
     },
     emailVerified: { 
       type: Date, 
       default: null 
     },
-    hasPassword: {
-      type: Boolean,
-      default: false
-    },
-    salary: {
-      type: Number,
-      default: 0
+    payStructure: {
+      payBasis: { type: String, enum: ["Hourly", "Salaried", "Piece_Rate", "Daily", "Commission", "Stipend"], required: [true, "Pay basis is required"] },
+      baseRate: { type: Schema.Types.Decimal128, required: [true, "Base rate is required"] },
+      overtimeRate: { type: Schema.Types.Decimal128, default: 0 },
+      payFrequency: { type: String, enum: ["Daily", "Weekly", "Biweekly", "Semimonthly", "Monthly"], required: [true, "Pay frequency is required"] },
+      currency: { type: String, required: [true, "Currency is required"] },
+      pieceRateUnit: { type: String },
+      effectiveFrom: { type: Date, required: [true, "Effective from is required"] }
+
     },
     designation: {
       type: String,
@@ -70,13 +90,14 @@ const UserSchema = new Schema<IUser>(
     },
     status: {
       type: String,
-      enum: ["Pending", "Active", "Inactive"],
+      enum: ["Pending", "Active", "Inactive","Terminated", "Suspended"],
       default: "Pending"
     },
-    setupToken: {
-      type: String,
-      default: null
-    },
+
+    setupTokenHash: { type: String },
+    setupTokenExpiresAt: { type: Date },
+    setupTokenUsedAt: { type: Date },
+
     notifications: {
       email: { type: Boolean, default: true },
       payroll: { type: Boolean, default: true },
@@ -86,11 +107,26 @@ const UserSchema = new Schema<IUser>(
       type: Boolean,
       default: false
     }
+
   },
   { 
     timestamps: true // Automatically adds createdAt and updatedAt
   }
 );
+
+
+UserSchema.pre("validate", function () {
+  if (
+    this.payStructure.payBasis === "Piece_Rate" &&
+    !this.payStructure.pieceRateUnit
+  ) {
+    this.invalidate(
+      "payStructure.pieceRateUnit",
+      "Piece-rate employees require a piece-rate unit."
+    );
+  }
+});
+
 
 // This "models.User || model..." check is critical for Next.js 
 // to prevent re-defining the model during hot reloads.
